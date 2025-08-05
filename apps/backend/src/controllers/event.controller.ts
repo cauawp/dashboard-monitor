@@ -10,7 +10,8 @@ export const receiveWebhook = async (req: Request, res: Response) => {
     const event = await EventService.retryCreateEvent(req.body);
 
     if (io) {
-      io.emit('event:new', event);
+      io.emit('new_event', event);
+      console.log('Evento emitido com sucesso');
     } else {
       logger.warn('Socket.io não inicializado - emit ignorado');
     }

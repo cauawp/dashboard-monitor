@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import eventRoutes from './routes/event.routes';
 import authRoutes from './routes/auth.routes';
 import insightRoutes from './routes/insight.routes';
@@ -8,7 +9,15 @@ import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(morgan('dev'));
 

@@ -15,6 +15,14 @@ router.post('/login', (req, res) => {
 
   if (username === USER.username && password === USER.password) {
     const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1d' });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // exige HTTPS em produção
+      sameSite: 'lax', // ou 'none' se estiver em domínios diferentes com HTTPS
+      maxAge: 1000 * 60 * 60 * 24, // 1 dia
+    });
+
     return res.json({ token });
   }
 
