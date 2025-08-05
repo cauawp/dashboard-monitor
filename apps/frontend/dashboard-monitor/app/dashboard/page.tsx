@@ -11,24 +11,28 @@ import Header from "@/components/header";
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({ type: "", from: "", to: "" });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    totalPages: 1,
+  });
   const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Função para buscar eventos (com filtros)
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (pageOverride?: number, limitOverride?: number) => {
     setLoading(true);
+
+    const page = pageOverride ?? pagination.page;
+    const limit = limitOverride ?? pagination.limit;
 
     const query: Record<string, string> = {
       ...filters,
-      page: "1",
-      limit: "50",
+      page: page.toString(),
+      limit: limit.toString(),
     };
-
-    if (filters.from || filters.to) {
-      query["limit"] = "99999999999";
-    }
 
     const params = new URLSearchParams(query).toString();
 
@@ -39,7 +43,12 @@ export default function Dashboard() {
       );
       if (!res.ok) throw new Error("Erro ao buscar eventos");
       const data = await res.json();
-      setEvents(data);
+      setEvents(data.events);
+      setPagination({
+        page: data.pagination.page,
+        limit: data.pagination.limit,
+        totalPages: data.pagination.totalPages,
+      });
     } catch (err) {
       console.error(err);
       setEvents([]);
@@ -49,7 +58,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchEvents(1); // volta para página 1 ao mudar filtros
   }, [filters]);
 
   const { newEvent } = useSocket((event) => {
@@ -69,6 +78,51 @@ export default function Dashboard() {
         </div>
 
         <Filters filters={filters} setFilters={setFilters} />
+        <div className="flex flex-col md:flex-row justify-between items-center mt-6 gap-4">
+          <div>
+            Página {pagination.page} de {pagination.totalPages}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => fetchEvents(pagination.page - 1)}
+              disabled={pagination.page <= 1}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => fetchEvents(pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Próxima
+            </button>
+
+            <label className="ml-4">
+              Eventos por página:
+              <select
+                value={pagination.limit}
+                onChange={(e) => {
+                  const newLimit = parseInt(e.target.value);
+                  setPagination((prev) => ({
+                    ...prev,
+                    page: 1,
+                    limit: newLimit,
+                  }));
+                  fetchEvents(1, newLimit);
+                }}
+                className="ml-2 px-2 py-1 border rounded"
+              >
+                {[10, 20, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
 
         <InsightCard
           events={events}

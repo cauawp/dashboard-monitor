@@ -24,8 +24,8 @@ export const receiveWebhook = async (req: Request, res: Response) => {
 };
 
 export const listEvents = async (req: Request, res: Response) => {
-  const events = await EventService.getEvents(req.query);
-  res.json(events);
+  const result = await EventService.getEvents(req.query);
+  res.json(result);
 };
 
 export const getAggregatedData = async (_req: Request, res: Response) => {

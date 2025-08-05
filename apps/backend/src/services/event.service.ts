@@ -49,16 +49,31 @@ export const getEvents = async (query: any) => {
 
   const filter: any = {};
   if (type) filter.type = type;
-  if (from || to) filter.timestamp = {};
-  if (from) filter.timestamp.$gte = new Date(from);
-  if (to) filter.timestamp.$lte = new Date(to);
+  if (from || to) {
+    filter.timestamp = {};
+    if (from) filter.timestamp.$gte = new Date(from);
+    if (to) filter.timestamp.$lte = new Date(to);
+  }
+
+  const pageNum = Math.max(1, parseInt(page));
+  const limitNum = Math.max(1, parseInt(limit));
+
+  const total = await EventModel.countDocuments(filter);
 
   const events = await EventModel.find(filter)
     .sort({ timestamp: -1 })
-    .skip((+page - 1) * +limit)
-    .limit(+limit);
+    .skip((pageNum - 1) * limitNum)
+    .limit(limitNum);
 
-  return events;
+  return {
+    events,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum),
+    },
+  };
 };
 
 export const getEventById = async (id: string) => {
