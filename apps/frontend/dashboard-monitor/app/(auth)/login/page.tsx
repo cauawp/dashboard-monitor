@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/ui/button";
-import Input from "@/components/ui/input"; // import do novo componente
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Login() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function Login() {
         setError(message || "Erro ao fazer login");
       }
     } catch (err) {
-      setError("Erro inesperado");
+      setError(`Erro inesperado: ${err}`);
     }
   };
 
@@ -56,7 +56,9 @@ export default function Login() {
         required
       />
 
-      <Button type="submit" label="Entrar" />
+      <Button className="cursor-pointer" type="submit">
+        Entrar
+      </Button>
 
       {error && <p className="text-red-500">{error}</p>}
     </form>

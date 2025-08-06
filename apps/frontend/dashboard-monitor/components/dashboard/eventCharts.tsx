@@ -8,15 +8,24 @@ Chart.register(...registerables);
 
 interface EventChartsProps {
   filters: { type: string; from: string; to: string };
-  events: any[]; // array de eventos para atualizar localmente
+  events: any[];
 }
+
+const typeLabels: Record<string, string> = {
+  purchase: "Compra",
+  login: "Login",
+  logout: "Logout",
+  error: "Erro",
+  signup: "Cadastro",
+  click: "Clique",
+  view: "Visualização",
+};
 
 export default function EventCharts({ filters, events }: EventChartsProps) {
   const [volumeData, setVolumeData] = useState<any>(null);
   const [distributionData, setDistributionData] = useState<any>(null);
   const [topUsersData, setTopUsersData] = useState<any>(null);
 
-  // Função para processar eventos locais e gerar dados para os gráficos
   const processEvents = (events: any[]) => {
     if (!events.length) {
       setVolumeData(null);
@@ -25,11 +34,28 @@ export default function EventCharts({ filters, events }: EventChartsProps) {
       return;
     }
 
-    // --- Volume de eventos por data (exemplo agrupando por dia)
+    // --- Por data ou hora
+    const dates = events.map((e) =>
+      new Date(e.timestamp).toISOString().slice(0, 10)
+    );
+    const uniqueDates = [...new Set(dates)];
+    const isSameDay = uniqueDates.length === 1;
+
     const volumeMap: Record<string, number> = {};
     events.forEach((e) => {
-      const day = new Date(e.timestamp).toISOString().slice(0, 10);
-      volumeMap[day] = (volumeMap[day] || 0) + 1;
+      const dateObj = new Date(e.timestamp);
+      let key;
+
+      if (isSameDay) {
+        key = dateObj.toISOString().slice(11, 16); // HH:mm
+      } else {
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // getMonth() é zero-indexado
+        const year = dateObj.getFullYear();
+        key = `${day}/${month}/${year}`; // DD/MM/YYYY
+      }
+
+      volumeMap[key] = (volumeMap[key] || 0) + 1;
     });
 
     const volumeLabels = Object.keys(volumeMap).sort();
@@ -39,7 +65,7 @@ export default function EventCharts({ filters, events }: EventChartsProps) {
       labels: volumeLabels,
       datasets: [
         {
-          label: "Eventos",
+          label: isSameDay ? "Eventos por horário" : "Eventos por dia",
           data: volumeCounts,
           fill: true,
           borderColor: "rgb(75, 192, 192)",
@@ -48,13 +74,16 @@ export default function EventCharts({ filters, events }: EventChartsProps) {
       ],
     };
 
-    // --- Distribuição por tipo
+    // --- Por tipo
     const typeMap: Record<string, number> = {};
     events.forEach((e) => {
-      typeMap[e.type] = (typeMap[e.type] || 0) + 1;
+      const readableType = typeLabels[e.type] || e.type;
+      typeMap[readableType] = (typeMap[readableType] || 0) + 1;
     });
+
     const distLabels = Object.keys(typeMap);
     const distCounts = distLabels.map((label) => typeMap[label]);
+
     const distribution = {
       labels: distLabels,
       datasets: [
@@ -73,12 +102,12 @@ export default function EventCharts({ filters, events }: EventChartsProps) {
       ],
     };
 
-    // --- Top usuários por quantidade de eventos
+    // --- Top usuários
     const userMap: Record<string, number> = {};
     events.forEach((e) => {
       userMap[e.userId] = (userMap[e.userId] || 0) + 1;
     });
-    // Ordena desc e pega top 5
+
     const topUsersEntries = Object.entries(userMap)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5);
@@ -102,36 +131,24 @@ export default function EventCharts({ filters, events }: EventChartsProps) {
     setTopUsersData(topUsers);
   };
 
-  // Atualiza gráficos localmente sempre que `events` mudam
   useEffect(() => {
     processEvents(events);
   }, [events]);
 
-  // Opcional: fetch novos dados do backend quando filtros mudarem
-  // Se quiser manter dados do backend + cache local, descomente e adapte:
-  /*
-  useEffect(() => {
-    async function fetchAggregates() {
-      const params = new URLSearchParams(filters as any).toString();
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}api/events/aggregate?${params}`,
-          { credentials: "include" }
-        );
-        const data = await res.json();
-
-        // Aqui você pode transformar data como quiser, igual ao processEvents
-        // Ou apenas usar o resultado direto (se formato diferente do local)
-      } catch (err) {
-        console.error("Erro ao buscar agregados", err);
-      }
-    }
-    fetchAggregates();
-  }, [filters]);
-  */
+  if (!events.length) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        Nenhum evento encontrado para o intervalo selecionado.
+      </div>
+    );
+  }
 
   if (!volumeData || !distributionData || !topUsersData) {
-    return <p>Carregando gráficos...</p>;
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        Carregando gráficos...
+      </div>
+    );
   }
 
   return (

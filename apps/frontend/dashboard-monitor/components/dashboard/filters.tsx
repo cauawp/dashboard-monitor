@@ -1,4 +1,3 @@
-// app/dashboard/components/Filters.tsx
 "use client";
 
 interface Props {
