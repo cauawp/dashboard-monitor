@@ -66,6 +66,15 @@ export default function Dashboard() {
         `${process.env.NEXT_PUBLIC_API_URL}api/events?${params}`,
         { credentials: "include" }
       );
+      if (res.status === 401) {
+        return {
+          redirect: {
+            destination: "/login",
+            permanent: false,
+          },
+        };
+      }
+
       if (!res.ok) throw new Error("Erro ao buscar eventos");
       const data = await res.json();
       setEvents(data.events);

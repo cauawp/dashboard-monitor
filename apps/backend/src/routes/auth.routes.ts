@@ -4,13 +4,12 @@ import { JWT_SECRET } from '../config/env';
 
 const router = Router();
 
-// Usuário fixo
+// USUÁRIO FIXO
 const USER = {
   username: 'admin',
   password: '123456',
 };
 
-// LOGIN
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -19,8 +18,8 @@ router.post('/login', (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: true,   
-      sameSite: 'none', 
+      secure: true,
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24, // 1 dia
     });
 
@@ -30,7 +29,6 @@ router.post('/login', (req, res) => {
   return res.status(401).json({ error: 'Credenciais inválidas' });
 });
 
-// LOGOUT
 router.post('/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
@@ -39,6 +37,21 @@ router.post('/logout', (req, res) => {
   });
 
   return res.json({ success: true });
+});
+
+router.get('/me', (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token não encontrado' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return res.json({ user: decoded });
+  } catch (err) {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
+  }
 });
 
 export default router;
