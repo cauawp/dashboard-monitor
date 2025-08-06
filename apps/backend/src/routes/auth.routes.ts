@@ -4,12 +4,13 @@ import { JWT_SECRET } from '../config/env';
 
 const router = Router();
 
-// Ez login fixo
+// Usuário fixo
 const USER = {
   username: 'admin',
   password: '123456',
 };
 
+// LOGIN
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -18,15 +19,26 @@ router.post('/login', (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,   
+      sameSite: 'none', 
       maxAge: 1000 * 60 * 60 * 24, // 1 dia
     });
 
-    return res.json({ token });
+    return res.json({ success: true });
   }
 
   return res.status(401).json({ error: 'Credenciais inválidas' });
+});
+
+// LOGOUT
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+  });
+
+  return res.json({ success: true });
 });
 
 export default router;

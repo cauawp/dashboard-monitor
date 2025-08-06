@@ -15,13 +15,17 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        body: JSON.stringify({ username, password }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}api/auth/login`,
+        {
+          method: "POST",
+          body: JSON.stringify({ username, password }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (res.ok) {
         router.push("/dashboard");

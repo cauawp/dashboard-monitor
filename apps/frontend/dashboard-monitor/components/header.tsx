@@ -25,13 +25,17 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}api/auth/logout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({}),
+        }
+      );
 
       if (res.ok) {
         router.push("/login");

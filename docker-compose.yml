@@ -13,15 +13,16 @@ services:
     depends_on:
       - mongodb
 
-  # frontend:
-  #   build:
-  #     context: ./apps/frontend
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./apps/frontend:/app
-  #     - /app/node_modules
-  #   command: sh -c "npm install && npm run dev"
+  frontend:
+    build:
+      context: ./apps/frontend/dashboard-monitor
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+    env_file: .env
+    command: sh -c "npm install && npm run dev"
 
   mongodb:
     image: mongo
