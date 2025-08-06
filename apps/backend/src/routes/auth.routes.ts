@@ -18,8 +18,8 @@ router.post('/login', (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // exige HTTPS em produção
-      sameSite: 'lax', // ou 'none' se estiver em domínios diferentes com HTTPS
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24, // 1 dia
     });
 
