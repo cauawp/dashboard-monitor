@@ -23,6 +23,26 @@ Este projeto é uma solução completa de monitoramento de eventos de usuários 
 - 🎛️ Filtros por tipo de evento e intervalo de tempo
 - 🕒 Indicador de última atualização e status de conexão
 
+#### 🔐 Login no Dashboard
+
+O processo de login foi simplificado propositalmente para fins práticos durante o teste técnico. Não há criação de novos usuários nem banco de dados de autenticação. O login utiliza um par fixo de credenciais:
+
+```
+Usuário: admin
+Senha: 123456
+```
+
+**Como funciona:**
+
+- A tela de login está em `/login`
+- Ao preencher e submeter o formulário, é feito um `POST /login` para o backend
+- O backend valida se as credenciais são exatamente `admin` e `123456`
+- Em caso de sucesso, o backend retorna um **JWT**, salvo automaticamente em um **cookie HTTPOnly**
+- As rotas protegidas exigem esse token válido
+- O token tem expiração curta e pode ser revogado limpando o cookie (logout automático)
+
+Essa abordagem simula uma autenticação real de forma rápida e funcional, sem a complexidade de um sistema de criação de usuários, ideal para o escopo do teste.
+
 ---
 
 ## 🧱 Justificativas Técnicas
