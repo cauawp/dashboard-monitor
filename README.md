@@ -8,7 +8,7 @@ Este projeto é uma solução completa de monitoramento de eventos de usuários 
 
 ### Backend (Node.js + TypeScript + Express)
 
-- 📥 Recebimento de eventos via Webhook (`POST /webhook/event`)
+- 📥 Recebimento de eventos via Webhook (`POST /api/events/webhook`)
 - 📊 Endpoints REST para consulta de dados brutos e agregados
 - 🧠 Geração de insights via **OpenAI API**
 - 📡 Emissão em tempo real com **WebSocket**
